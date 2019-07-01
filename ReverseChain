@@ -1,0 +1,102 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+typedef struct list
+{
+    int data;
+    struct List *next;
+}List,*LinkList;
+
+
+void InitList(LinkList *L);  //初始化
+void TopInsert(LinkList L1,LinkList L2);   //头插操作
+void InvertList(LinkList L);   //逆序操作
+void visit(int e);                //打印一个元素
+void TraverseList(LinkList L,void(*visit(int)));   //遍历操作
+int InsertElem(LinkList L,int i,int e);   //插入元素操作
+int main()
+{
+    LinkList L;
+    int i;    
+    InitList(&L);
+    for(i=0;i<10;i++)
+    {
+        InsertElem(L,i+1,i);
+    }
+    printf("list:");
+    TraverseList(L,visit);
+    printf("\nlist after invert:");
+    InvertList(L);
+    TraverseList(L,visit);    
+}
+
+void InitList(LinkList *L)
+{
+    *L=(LinkList)malloc(sizeof(List));
+    if(!L)
+    {
+        exit(-2);
+    }
+    (*L)->next = NULL;
+}
+
+void visit(int e)
+{
+    printf("%d ",e);
+}
+
+void TraverseList(LinkList L,void(*visit(int)))
+{
+    LinkList p = L->next;
+    while(p)
+    {
+        visit(p->data);
+        p = p->next;
+    }
+}
+
+int InsertElem(LinkList L,int i,int e)
+{
+    int j = 0;
+    LinkList p = L;
+    LinkList s;
+    while(p&&j<i-1)
+    {
+        j++;
+        p = p->next;
+    }
+    s = (LinkList)malloc(sizeof(List));
+    s->data=e;
+    s->next = p->next;
+    p->next =s;
+    return 0;
+}
+
+void TopInsert(LinkList L1,LinkList L2)
+{
+    LinkList p;                
+    p = L1;         //此处画图可以比较清楚理解操作关系
+    L2->next = p->next;
+    p->next = L2;
+}
+
+void InvertList(LinkList L)
+{
+    LinkList p,pBack;
+    p=L->next;
+    while(p->next) //判断条件导致无法正常逆序最后一个元素，需要额外进行一次头插操作
+    {    
+        pBack = p->next;//保存向后的一个节点，否则后一个节点会被逆序操作吞掉
+        if(p == L->next)
+        {
+            p->next = NULL;
+        }
+        else
+        {
+            p->next=L->next;
+        }
+        L->next = p;
+        p = pBack;
+    }
+    TopInsert(L,p);
+}
