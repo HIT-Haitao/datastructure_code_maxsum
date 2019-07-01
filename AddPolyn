@@ -1,0 +1,157 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+typedef struct term
+{
+    float coef;
+    int exp;
+    struct term *next;
+}term,*Link;
+
+void CreatePolyn(Link *L,int N);  //创建多项式链表
+void PrintPolyn(Link L);              //打印多项式
+int cmp(Link L1,Link L2);            //比较两个项的幂次关系
+Link AddPolyn(Link L1,Link L2);  //两个多项式相加
+
+int main()
+{
+    Link L1,L2;
+    int N1,N2;
+    printf("Please input the number of terms for the first polyn:\n");                   //输入多项式的项数
+    scanf("%d",&N1);
+    printf("Please input the info of the first polyn:\n");
+    CreatePolyn(&L1,N1);
+    PrintPolyn(L1);
+    printf("Please input the number of terms for the second polyn:\n");
+    scanf("%d",&N2);
+    printf("Please input the info of the second polyn:\n");
+    CreatePolyn(&L2,N2);
+    PrintPolyn(L2);
+    PrintPolyn(AddPolyn(L1,L2));
+    return 0;
+}
+
+void CreatePolyn(Link *L,int N)
+{
+    Link s,p;
+    int i;    
+    *L = (Link)malloc(sizeof(term)); //初始化
+    p = *L;
+    //s=  (Link)malloc(sizeof(term));
+    for(i=0;i<N;i++)
+    {
+        s=  (Link)malloc(sizeof(term));
+        printf("the exp:\n");
+        scanf("%d",&s->exp);
+        printf("the cof:\n");
+        scanf("%f",&s->coef);
+        p->next = s;
+        p =s;                       //插入元素
+    }
+    p->next = NULL;
+}
+void PrintPolyn(Link L)
+{
+    Link p;
+    p = L->next;
+    while(p)
+    {
+        printf("%.2fx^%d",p->coef,p->exp);
+        p = p->next;
+        if(p!=NULL)       //如果输入的项不是负数，需要加上“+”符号
+        {
+            if(p->coef>0)
+            {
+                printf("+");
+            }
+        }
+    }
+    printf("\n");
+}
+
+int cmp(Link L1,Link L2)
+{
+    if(L1->exp == L2->exp)
+    {
+        return 0;
+    }
+    else if(L1->exp < L2->exp)
+    {
+        return -1;
+    }
+    else
+    {
+        return 1;
+    }
+}
+
+Link AddPolyn(Link L1,Link L2)
+{
+    Link p,q,s,new,pc;
+    int sum;
+    new = (Link)malloc(sizeof(term));
+    new->next = NULL;
+    pc = new;
+    p= L1->next;
+    q= L2->next;
+    while(p&&q)
+    {
+        switch(cmp(p,q))
+        {
+            case(0):
+                sum = p->coef + q->coef;
+                if(sum!=0.0)       //当两项之和不为零时，定义一个临时链表节点存储两项之和以及幂次，并且将其尾部链接到新的链表中
+                {
+                s = (Link)malloc(sizeof(term));
+                s->coef = p->coef+q->coef;
+                s->exp = p->exp;
+                s->next = NULL;
+                pc->next = s;
+                pc = pc->next;
+                }
+                p = p->next;  //两个多项式同时向后移动
+                q = q->next;
+                break;    
+            case(-1):
+                s = (Link)malloc(sizeof(term));
+                s->coef = p->coef;
+                s->exp = p->exp;//此时只存储幂次小项的信息
+                s->next = NULL;
+                pc->next = s;
+                p = p->next; //只有幂次小项向后移动一位
+                pc = pc->next;
+                break;
+            case(1):
+                s = (Link)malloc(sizeof(term));
+                s->coef = q->coef;
+                s->exp = q->exp;
+                s->next = NULL;
+                pc->next = s;
+                q = q->next;
+                pc = pc->next;
+                break;
+        }
+    }
+    while(p) //观察两个多项式还有没有剩余项
+    {
+        s = (Link)malloc(sizeof(term));
+        s->coef = p->coef;
+        s->exp = p->exp;
+        s->next =NULL;
+        pc->next = s;
+        p = p->next;
+        pc = pc->next;
+    }
+    while(q)
+    {
+        s = (Link)malloc(sizeof(term));
+        s->coef = q->coef;
+        s->exp = q->exp;
+        s->next =NULL;
+        pc->next = s;
+        q = q->next;
+        pc = pc->next;
+    }
+    pc->next = NULL;
+    return new;
+}
