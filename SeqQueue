@@ -1,0 +1,159 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+#define TRUE 1
+#define FALSE 0
+#define OK 1
+#define ERROR 0
+#define OVERFLOW -2
+#define INIT_SIZE 11
+
+typedef int QElemType;
+typedef int Status;
+
+typedef struct SeqQueue
+{
+    QElemType *array;
+    int rear;
+    int front;
+    int capacity;
+}SeqQueue;
+
+Status InitQueue(SeqQueue*Q)
+{
+    //Q = (SeqQueue*) malloc (sizeof(SeqQueue));
+    if(!Q)
+    {
+        exit(OVERFLOW);
+    }
+    Q->array = (QElemType*) malloc (INIT_SIZE *sizeof(QElemType));
+    Q->front = 0;
+    Q->rear= 0 ;
+    Q->capacity = INIT_SIZE;
+    return OK;
+}
+
+Status DestroyQueue(SeqQueue *Q)
+{
+    free(Q->array);
+    //free(Q);
+    Q->capacity = 0;
+    return OK;
+}
+
+Status ClearQueue(SeqQueue *Q)
+{
+    DestroyQueue(Q);
+    InitQueue(Q);
+    return OK;
+}
+
+Status IsEmpty(SeqQueue *Q)
+{
+    if(Q->front == Q->rear)
+    {
+        return TRUE;
+    }
+    else
+    {
+        return FALSE;    
+    }
+}
+
+int GetLength(SeqQueue Q)
+{
+    int q;
+    int i=0;
+    q = Q.front;
+    while(q!=Q.rear)
+    {
+        i++;
+        q = (q+1) % Q.capacity;
+    }
+    return i;
+}
+
+Status GetHead(SeqQueue Q,QElemType *e)
+{
+    if(Q.front == Q.rear)
+    {
+        return ERROR;
+    }
+    *e = Q.array[Q.front];
+}
+
+Status EnQueue(SeqQueue *Q,QElemType e)
+{
+    if(((Q->rear+1) % Q->capacity) == Q->front)
+    {
+        return ERROR;
+    }
+    Q->array[Q->rear] = e;
+    Q->rear = (Q->rear+1) % Q->capacity;
+    return OK;
+}
+
+Status DeQueue(SeqQueue *Q,QElemType *e)
+{
+    if(Q->rear == Q->front)
+    {
+        return ERROR;
+    }
+
+    *e = Q->array[Q->front];
+    Q->front =(Q->front+1) % Q->capacity; 
+    return OK;
+}
+
+void visit(QElemType e)
+{
+    printf("%d ",e);
+}
+
+Status TraverseQueue(SeqQueue Q,void(*visit)(QElemType))
+{
+    int i = Q.front;
+    while(i!=Q.rear)
+    {
+        visit(Q.array[i]);
+        i = (i+1) % Q.capacity;
+    }
+    return OK;
+}
+
+int main()
+{
+    SeqQueue Q;
+    if (InitQueue(&Q))
+    {
+        QElemType e;
+        int i;
+
+        printf("init_success\n");
+
+          if (IsEmpty(&Q))
+        {
+            printf("queue is empty\n");
+        }
+
+        for (i = 0; i < 10; i++)
+        {
+            EnQueue(&Q, i);
+        }
+
+        GetHead(Q, &e);
+        printf("The first element is %d\n", e);
+
+        printf("length is %d\n", GetLength(Q));
+
+        DeQueue(&Q, &e);
+        printf("delete element is %d\n", e);
+
+        TraverseQueue(Q, *visit);
+
+        if (DestroyQueue(&Q))
+        {
+            printf("\ndestroy_success\n");
+        }
+    }
+}
