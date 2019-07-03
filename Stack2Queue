@@ -1,0 +1,49 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+#define STACK_INIT_SIZE 100
+#define STACKINCREMENT 10
+
+typedef struct
+{
+    int *base;
+    int *top;
+    int stacksize;
+}stack;
+
+int InitStack(stack *s)
+{
+    s->base = (int *)malloc(sizeof(int)*STACK_INIT_SIZE);
+    if(s->base == NULL)
+    {
+        printf("malloc failure!");
+        exit(-1);
+    }
+    s->top = s->base;
+    s->stacksize = STACK_INIT_SIZE;
+    return 1;
+}
+
+int push(stack *s,int i)
+{
+    if(s->top - s->base >= s->stacksize)
+    {
+        s->base = (int*)malloc(STACKINCREMENT*sizeof(int));
+        if(s->base == NULL)
+        {
+            printf("malloc failure");
+            return -1;
+        }
+    }
+    *(s->top++) = i;
+    return 1;
+}
+
+int pop(stack *s)
+{
+    if(s->base == s->top)
+    {
+        return -1;
+    }
+    return *(--s->top);
+}
