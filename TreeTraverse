@@ -1,0 +1,188 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+#define INIT_SIZE  10
+#define INCREMENT_SIZE  10
+#define OVERFLOW -2
+
+typedef int ElemType;
+
+typedef struct TNode
+{
+    ElemType data;
+    struct TNode *lchild;
+    struct TNode *rchild;
+}TNode,*LinkTree;
+
+typedef struct Stack
+{
+    LinkTree *top;
+    LinkTree *base;
+    int StackSize;
+}Stack;
+
+int InitStack(Stack *S)
+{
+    S->base  = (LinkTree *)malloc(sizeof(LinkTree)*INIT_SIZE);
+    if(!S->base)
+    {
+        exit(OVERFLOW);
+    }
+    S->top = S->base;
+    S->StackSize = INIT_SIZE;
+}
+
+int push(Stack *S,LinkTree e)
+{
+    if((S->top-S->base)>=S->StackSize)
+    {
+        S->base = (LinkTree*)realloc(S->base ,(S->StackSize+INCREMENT_SIZE)*sizeof(LinkTree));
+        if(!S->base)
+        {
+            exit(OVERFLOW);
+        }
+        S->StackSize = S->StackSize + INCREMENT_SIZE;
+    }
+    *(S->top++) = e;
+}
+
+int  pop(Stack *S,LinkTree *e)
+{
+    if(S->top == S->base)
+    {
+        return -1;
+    }
+    *e = *(--S->top);
+}
+
+int GetTop(Stack S,LinkTree *e)
+{
+    if(S.top == S.base)
+    {
+        return -1;
+    }
+    *e = *(--S.top);
+}
+int isEmpty(Stack S)
+{
+    if(S.top == S.base)
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+int CreateTree(LinkTree *T)
+{
+    ElemType e;
+    scanf("%d",&e);
+    if(e == 0)
+    {
+        *T = NULL;
+    }
+    else
+    {
+        *T = (LinkTree) malloc(sizeof(TNode));
+        if(!T)
+        {
+            exit(OVERFLOW);
+        }
+        (*T)->data = e;
+        CreateTree(&(*T)->lchild);
+        CreateTree(&(*T)->rchild);
+    }
+}
+
+/*
+* void visit(ElemType e)
+{
+    printf("%d ",e);
+}
+*/
+
+int preOrder(LinkTree T)
+{
+    LinkTree p = T;
+    Stack S;
+    InitStack(&S);
+    while(p||!isEmpty(S))
+    {
+        if(p)
+        {
+            printf("%d ",p->data);
+            push(&S,p);
+            p = p->lchild;
+        }
+        else
+        {
+            pop(&S,&p);
+            p = p->rchild;
+        }
+    }
+}
+
+int inOrder(LinkTree T)
+{
+    LinkTree p = T;
+    Stack S;
+    InitStack(&S);
+    while(p||!isEmpty(S))
+    {
+        if(p)
+        {
+            push(&S,p);
+            p = p->lchild;
+        }
+        else
+        {
+            pop(&S,&p);
+            printf("%d ",p->data);
+            p = p->rchild;
+        }
+    }
+}
+
+int postOrder(LinkTree T)
+{
+    LinkTree p = T;
+    LinkTree e;
+    LinkTree pre = NULL;
+    Stack S;
+    InitStack(&S);
+    while(p||!isEmpty(S))
+    {
+        while(p)
+        {
+            push(&S,p);
+            p = p->lchild;
+        }
+        GetTop(S,&p);
+        if(p->rchild ==NULL||p->rchild ==pre)   //保证根节点晚于右子节点打印
+        {
+            printf("%d ",p->data);
+            pre = p;
+            pop(&S,&e);
+            p = NULL;
+        }
+        else
+        {
+            p = p->rchild;
+        }
+    }
+}
+
+int main()
+{
+    LinkTree T;
+    printf("INPUT:\n");
+    CreateTree(&T);
+    printf("pre:\n");
+    preOrder(T);
+    printf("\n in:\n");
+    inOrder(T);
+    printf("\n post:\n");
+    postOrder(T);
+}
