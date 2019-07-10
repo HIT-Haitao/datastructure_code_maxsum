@@ -1,0 +1,199 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+#define INIT_SIZE 10
+#define INCREMENTSIZE 10
+
+typedef struct LinkList   //链表用来储存输入的表达式
+{
+    char *elem;
+    int length;
+    int size;
+}LinkList;
+
+typedef struct SNode      //栈定义
+{
+    char data;
+    struct SNode *next;
+}SNode,*LinkStack;
+
+int InitList(LinkList *L)
+{
+    L->elem = (char*)malloc(INIT_SIZE * sizeof(char));
+    if(!L->elem)
+    {
+        return -1;
+    }
+    L->length = 0;
+    L->size = INIT_SIZE;
+    return 0;
+}
+int InitStack(LinkStack *S)
+{
+    *S = (LinkStack)malloc(sizeof(SNode));
+    if(!S)
+    {
+        return -1;
+    }
+    (*S)->next = NULL;
+    return 0;
+}
+
+int GetTop(LinkStack S)
+{
+    SNode *p;
+    p = S->next;
+    if(p == NULL)
+    {
+        return -1;
+    }
+    return p->data;
+}
+
+int push(LinkStack S,char e)
+{
+    SNode *p;
+    p = (LinkStack)malloc(sizeof(SNode));
+    if(!p)
+    {
+        return -1;
+    }
+    p->data = e;
+    p->next = S->next;
+    S->next = p;
+    return 0;
+}
+
+int pop(LinkStack S)
+{
+    LinkStack p = S->next;
+    if(S->next == NULL)
+    {
+        return -1;
+    }
+    S->next = p->next;
+    free(p);
+
+    return 0;
+}
+
+int execute(char a,char op,char b)
+{
+    int s = a -'0';
+    int t = b -'0';
+    switch(op)
+    {
+    case '+':
+        return (s+t)+'0';
+    case '-':
+        return (s-t)+'0';
+    case '*':
+        return (s*t)+'0';
+    case '/':
+        return (s/t)+'0';
+    default:
+        return -1;
+    }
+}
+
+int compare (char a,char b)
+{
+
+    if((a == '*'||a == '/')&&(b == '+'||b == '-'))
+    {
+        return 1;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
+int isNum(char a)
+{
+    if(a>='0'&&a<='9')
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int isOpr(char a)
+{
+    if(a == '+'||a == '-'||a == '*'||a == '/')
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int main()
+{
+    LinkStack op;
+    LinkStack num;
+    LinkList L;
+    InitStack(&op);
+    InitStack(&num);
+    InitList(&L);
+    int i;
+    char p,a,b;
+    printf("Input:\n");
+   while((L.elem[L.length] = getchar() )!= '\n')
+    {
+        if(L.length+1>=L.size)
+        {
+            L.elem = (char*)malloc((INIT_SIZE+INCREMENTSIZE)*sizeof(char));
+            if(!L.elem)
+            {
+                return -1;
+            }
+            L.size +=INCREMENTSIZE;
+        }
+        L.length++;
+    }
+
+    for(i=0;i<L.length;i++)
+    {
+        if(L.elem[i] == '(')
+        {
+            push(op,'(');
+        }
+        if(L.elem[i] == ')')
+        {
+            while(GetTop(op)!='(')
+            {
+                p = GetTop(op);
+                pop(op);
+                a = GetTop(num);
+                pop(num);
+                b = GetTop(num);
+                pop(num);
+                a = execute(a,p,b);
+                push(num,a);
+            }
+            pop(op);
+        }
+        if(isNum(L.elem[i]))
+        {
+            push(num,L.elem[i]);
+        }
+        if(isOpr(L.elem[i]))
+        {
+            while(compare(L.elem[i],GetTop(op)))
+            {
+                p = GetTop(op);
+                pop(op);
+                a = GetTop(num);
+                pop(num);
+                b = GetTop(num);
+                pop(num);
+                a = execute(a,p,b);
+                push(num,a);
+            }
+            push(op,L.elem[i]);
+        }
+    }
+    printf("The result is %d :\n",GetTop(num)-'0');
+    return 0;
+}
+
