@@ -1,0 +1,210 @@
+#include<stdio.h>
+#include<stdlib.h>
+
+#define INIT_SIZE 10
+#define INCREMENTSIZE 10
+
+typedef struct List
+{
+    char *elem;
+    int length;
+    int size;
+}List;
+
+typedef struct SNode
+{
+    char data;
+    struct SNode *next;
+}SNode,*LinkStack;
+
+typedef struct TNode
+{
+    char data;
+    struct TNode *lchild;
+    struct TNode *rchild;
+}TNode,*Tree;
+
+int InitList(List*L)
+{
+    (*L).elem = (char *)malloc(INIT_SIZE*sizeof(char));
+    if(!(*L).elem)
+    {
+        return -1;
+    }
+    (*L).length = 0;
+    (*L).size = INIT_SIZE;
+    return 0;
+}
+
+int InitStack(LinkStack *S)
+{
+    (*S) = (LinkStack)malloc(sizeof(SNode));
+    if(!S)
+    {
+        return -1;
+    }
+    (*S)->next = NULL;
+    return 0;
+}
+
+int InitTree(Tree *T)
+{
+    (*T) = (Tree)malloc(sizeof(TNode));
+    if(!T)
+    {
+        return -1;
+    }
+    (*T)->lchild = NULL;
+    (*T)->rchild = NULL;
+    return 0;
+}
+
+int push(LinkStack S,char e)
+{
+    SNode *p;
+    p = (LinkStack)malloc(sizeof(SNode));
+    if(!p)
+    {
+        return -1;
+    }
+    p->data = e;
+    S->next = p;
+    p->next = S->next;
+    return 0;
+}
+
+int pop(LinkStack S)
+{
+    SNode *p;
+    p = S->next;
+    S->next = p->next;
+    free(p);
+    return 0;
+}
+
+int GetTop(LinkStack S)
+{
+    int temp;
+    temp = S->next->data;
+    return temp;
+}
+
+Tree CreateTree(List L,int first,int last)
+{
+    Tree T;
+
+    if(first == last-1)                   //递归的结束
+    {
+        Tree Tleaf;
+        InitTree(&Tleaf);
+        Tleaf->data = L.elem[first];
+        Tleaf->lchild = NULL;
+        Tleaf->rchild = NULL;
+        return Tleaf;
+    }
+    int i,flag=0,addsub=0,timediv=0;
+
+    for(i=first;i<last;i++)           //利用for循环读取表达式中所有的符号，来进行表达式的分割处理
+    {
+        if(L.elem[i] == '(')
+        {
+            flag++;
+        }
+        else if(L.elem[i] == ')')
+        {
+            flag--;
+        }
+        if(flag == 0)
+        {
+            if(L.elem[i] == '+'||L.elem[i] == '-')    //把加减放在前面，这样最终的二叉树加减号靠近根节点，就会先计算乘除
+            {
+                addsub = i;
+            }
+            else if(L.elem[i] == '*'||L.elem[i] == '/')
+            {
+                timediv = i;
+            }
+
+        }
+    }
+    if(addsub == 0 &&timediv ==0)
+    {
+        T = CreateTree(L,first+1,last-1);
+    }
+    else if(addsub!=0)
+    {
+        InitTree(&T);
+        T->data = L.elem[addsub];
+        T->lchild = CreateTree(L,first,addsub);
+        T->rchild = CreateTree(L,addsub+1,last);
+    }
+    else if(timediv!=0)
+    {
+        InitTree(&T);
+        T->data = L.elem[timediv];
+        T->lchild = CreateTree(L,first,timediv);
+        T->rchild = CreateTree(L,timediv+1,last);
+    }
+    return T;
+}
+
+int Calculate(Tree T)
+{
+    int a,b;
+    if(T->lchild == NULL &&T->rchild == NULL)
+    {
+        return T->data - '0';
+    }
+    a = Calculate(T->lchild);
+    b = Calculate(T->rchild);
+
+    if(T->data == '+')
+    {
+        return a+b;
+    }
+    if(T->data == '-')
+    {
+        return a-b;
+    }
+    if(T->data == '*')
+    {
+        return a*b;
+    }
+    if(T->data =='/')
+    {
+        return a/b;
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+
+
+int main()
+{
+    List L;
+    Tree T;
+    InitList(&L);
+    InitTree(&T);
+    int result;
+    printf("Input:\n");
+    while((L.elem[L.length]=getchar())!='\n')
+    {
+        if(L.length+1>=L.size)
+        {
+            L.elem = (char*)realloc(L.elem,(INIT_SIZE+INCREMENTSIZE)*sizeof(char));
+            if(!L.elem)
+            {
+                return -1;
+            }
+        }
+        L.length++;
+    }
+    T = CreateTree(L,0,L.length);
+    result = Calculate(T);
+    printf("the result is %d \n",result);
+    return 0;
+
+}
